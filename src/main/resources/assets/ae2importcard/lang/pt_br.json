@@ -1,0 +1,6 @@
+{
+  "item.ae2importcard.import_card": "Cartão de Importação",
+  "ae2importcard.configuration.importCardGrace": "Tolerância do Cartão de Importação (tiques)",
+  "ae2importcard.configuration.importCardGrace.tooltip": "Tiques que um Cartão de Importação continua coletando um resultado que a rede parou de esperar. É isso que devolve itens já enviados a uma máquina quando um trabalho é cancelado no meio do caminho.\nO contador reinicia toda vez que o cartão coleta algo, então uma sequência de resultados ainda em trânsito volta por completo. Esta tolerância só é executada quando um trabalho termina.\nDefina como 0 para dar a um trabalho cancelado apenas uma tentativa de coleta e nada mais.",
+  "ae2importcard.pack.guide": "Guia do AE2 Import Card"
+}

@@ -1,0 +1,80 @@
+package dev.rylex.ae2importcard.provider;
+
+import appeng.api.stacks.AEKey;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public final class OwedDispatch {
+
+    public static final long NO_DEADLINE = -1;
+
+    private final Map<AEKey, Long> parked;
+    private final Map<AEKey, Long> owed;
+    private long deadline;
+
+    public OwedDispatch(Map<AEKey, Long> parked, Map<AEKey, Long> owed) {
+        this(parked, owed, NO_DEADLINE);
+    }
+
+    public OwedDispatch(Map<AEKey, Long> parked, Map<AEKey, Long> owed, long deadline) {
+        this.parked = new LinkedHashMap<>(parked);
+        this.owed = new LinkedHashMap<>(owed);
+        this.deadline = deadline;
+    }
+
+    public Map<AEKey, Long> parked() {
+        return Collections.unmodifiableMap(parked);
+    }
+
+    public Map<AEKey, Long> owed() {
+        return Collections.unmodifiableMap(owed);
+    }
+
+    public long owedAmount(AEKey key) {
+        return owed.getOrDefault(key, 0L);
+    }
+
+    public long reserved(AEKey key) {
+        return Math.max(0, parked.getOrDefault(key, 0L) - owedAmount(key));
+    }
+
+    public long take(AEKey key, long amount) {
+        long remaining = owedAmount(key);
+        long taken = Math.min(remaining, amount);
+        if (taken <= 0) {
+            return 0;
+        }
+        if (remaining - taken <= 0) {
+            owed.remove(key);
+        } else {
+            owed.put(key, remaining - taken);
+        }
+        deadline = NO_DEADLINE;
+        return taken;
+    }
+
+    public boolean isSettled() {
+        return owed.isEmpty();
+    }
+
+    public long deadline() {
+        return deadline;
+    }
+
+    public boolean hasDeadline() {
+        return deadline != NO_DEADLINE;
+    }
+
+    public void startGrace(long deadline) {
+        this.deadline = deadline;
+    }
+
+    public void clearGrace() {
+        deadline = NO_DEADLINE;
+    }
+
+    public boolean expired(long now) {
+        return deadline != NO_DEADLINE && now >= deadline;
+    }
+}

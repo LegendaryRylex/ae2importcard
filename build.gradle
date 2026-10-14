@@ -1,0 +1,183 @@
+plugins {
+    id 'idea'
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.142'
+    id 'com.diffplug.spotless' version '8.8.0'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = "$mod_id-$minecraft_version"
+}
+
+tasks.named('jar', Jar).configure {
+    from 'LICENSE'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+sourceSets {
+    gametest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://www.cursemaven.com'
+        content { includeGroup 'curse.maven' }
+    }
+}
+
+// `-Pwith_nep=<path to a nep jar>` boots beside nep, where this mod stands down, and runs the GameTests for that case instead.
+var withNep = project.findProperty('with_nep')
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        gameTestServer {
+            type = 'gameTestServer'
+            systemProperty 'neoforge.enabledGameTestNamespaces', withNep ? "${mod_id}_nep" : project.mod_id
+        }
+
+        data {
+            data()
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+            sourceSet(sourceSets.gametest)
+        }
+    }
+
+    addModdingDependenciesTo(sourceSets.gametest)
+
+    unitTest {
+        enable()
+        testedMod = mods."${mod_id}"
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+    gametestImplementation.extendsFrom implementation
+    gametestCompileOnly.extendsFrom compileOnly
+    gametestRuntimeOnly.extendsFrom runtimeOnly
+}
+
+dependencies {
+    implementation "org.appliedenergistics:appliedenergistics2:${ae2_version}"
+
+    compileOnly "curse.maven:advancedae-1084104:${advanced_ae_file}"
+    localRuntime "curse.maven:advancedae-1084104:${advanced_ae_file}"
+    localRuntime "curse.maven:ae2addonlib-1366135:${ae2addonlib_file}"
+    localRuntime "curse.maven:geckolib-388172:${geckolib_file}"
+
+    localRuntime "curse.maven:ex-pattern-provider-892005:${extendedae_file}"
+    localRuntime "curse.maven:glodium-957920:${glodium_file}"
+    localRuntime "curse.maven:expanded-ae-1213351:${expandedae_file}"
+    localRuntime "curse.maven:ae2wtlib-459929:${ae2wtlib_file}"
+    localRuntime "curse.maven:mega-cells-622112:${megacells_file}"
+
+    compileOnly "curse.maven:ae2-draconic-fusion-autocrafter-1521464:${ae2_draconic_fusion_autocrafter_file}"
+    compileOnly "curse.maven:draconic-evolution-223565:${draconic_evolution_file}"
+    compileOnly "curse.maven:brandons-core-231382:${brandonscore_file}"
+    compileOnly "curse.maven:codechicken-lib-1-8-242818:${codechickenlib_file}"
+    localRuntime "curse.maven:ae2-draconic-fusion-autocrafter-1521464:${ae2_draconic_fusion_autocrafter_file}"
+    localRuntime "curse.maven:draconic-evolution-223565:${draconic_evolution_file}"
+    localRuntime "curse.maven:brandons-core-231382:${brandonscore_file}"
+    localRuntime "curse.maven:codechicken-lib-1-8-242818:${codechickenlib_file}"
+
+    if (withNep) {
+        localRuntime files(withNep)
+        localRuntime "curse.maven:guideme-recipe-compat-1722328:${gmrecipes_file}"
+    }
+
+    localRuntime "curse.maven:architectury-api-419699:${architectury_file}"
+    localRuntime "curse.maven:tool-kit-324888:${tool_kit_file}"
+
+    testImplementation platform('org.junit:junit-bom:5.14.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+spotless {
+    java {
+        target 'src/*/java/**/*.java'
+        importOrder()
+        removeUnusedImports()
+        palantirJavaFormat()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
+            ae2_version_range      : ae2_version_range,
+            advanced_ae_version_range: advanced_ae_version_range
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

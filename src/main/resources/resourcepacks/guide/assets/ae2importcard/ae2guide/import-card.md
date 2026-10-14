@@ -1,0 +1,67 @@
+---
+navigation:
+  title: Import Card
+  icon: ae2importcard:import_card
+  parent: ae2:items-blocks-machines/upgrade_cards.md
+item_ids:
+  - ae2importcard:import_card
+---
+# <Color id="aqua">Import Card</Color>
+
+<Column alignItems="center" fullWidth={true}>
+  # <Color id="aqua">Import Card</Color>
+
+  <ItemImage id="ae2importcard:import_card" scale="2"/>
+
+  Slot it into a Pattern Provider and that Provider collects its own results. This is what closes the loop for machines that leave their output in their buffer instead of pushing it back to the system.
+</Column>
+
+<ItemImage id="minecraft:air" scale="0.5"/>
+
+<RecipeFor id="ae2importcard:import_card"/>
+
+<ItemImage id="minecraft:air" scale="0.25"/>
+
+***
+
+<Column alignItems="center" fullWidth={true}>
+  ## <Color id="gold">How It Works</Color>
+</Column>
+
+<ItemImage id="minecraft:air" scale="0.25"/>
+
+* The Provider remembers what dispatched recipe it still owes and which side it sent that pattern to.
+* It only ever collects those exact results, from that exact side, up to the amount it is still waiting for.
+* Anything else sharing the inventory is left alone, including the ingredients the Provider just staged there for a job in progress.
+
+Because the Provider that pushed is the Provider that collects, results are always credited to the job that asked for them. Two Providers working the same block never take each other's items.
+
+<ItemImage id="minecraft:air" scale="0.5"/>
+
+***
+
+<Column alignItems="center" fullWidth={true}>
+  ## <Color id="gold">Cancelled Jobs</Color>
+</Column>
+
+<ItemImage id="minecraft:air" scale="0.25"/>
+
+Cancel a job partway through and whatever the Provider had already sent out will still be collected by the card for a short period afterwards, so the results in flight at the moment you cancelled come back to the network instead of being stranded in the machine. Every side collects its own, so a Provider feeding several stations gets one back from each.
+
+The grace restarts each time the card collects something, and only starts once the job has ended. While a job is live the card waits for its results however long they take.
+
+The grace period is 200 ticks by default, set by `importCardGrace` in the server config.
+
+<ItemImage id="minecraft:air" scale="0.5"/>
+
+***
+
+<Column alignItems="center" fullWidth={true}>
+  ## <Color id="gold">Works In</Color>
+</Column>
+
+<ItemImage id="minecraft:air" scale="0.25"/>
+
+Beyond AE2's own Pattern Provider, in block and cable form, the card slots into the pattern providers other mods add: Advanced AE's Advanced and Small Advanced Pattern Providers, ExtendedAE's Extended Pattern Provider, Expanded AE's Expanded Pattern Provider, MEGA Cells' MEGA Pattern Provider, and Applied Create's Andesite and Brass Pattern Providers.
+
+The AE2 Draconic Fusion Autocrafter's ME Draconic Pattern Provider takes the card too. It hands its jobs to a Fusion Crafting Core rather than an adjacent machine, so the card collects the finished result straight out of that core.
