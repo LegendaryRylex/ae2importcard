@@ -1,0 +1,7 @@
+{
+  "item.ae2importcard.import_card": "Import Card",
+  "ae2importcard.configuration.title": "AE2 Import Card",
+  "ae2importcard.configuration.importCardGrace": "Import Card Grace (Ticks)",
+  "ae2importcard.configuration.importCardGrace.tooltip": "Ticks an Import Card keeps collecting a result the network has stopped waiting for. This is what returns items already sent to a machine when a job is cancelled partway through.\nThe clock restarts every time the card collects something, so a run of results still in flight all come back. This grace period only runs once a job ends.\nSet to 0 to give a cancelled job a single collection attempt and nothing more.",
+  "ae2importcard.pack.guide": "AE2 Import Card Guide"
+}

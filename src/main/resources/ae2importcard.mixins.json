@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "dev.rylex.ae2importcard.mixin",
+  "plugin": "dev.rylex.ae2importcard.mixin.ImportCardMixinPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AEBaseMenuMixin",
+    "AEBaseMenuQuickMoveClaimMixin",
+    "PatternProviderLogicHostMixin",
+    "PatternProviderLogicMixin",
+    "PatternProviderMenuMixin",
+    "UpgradeCardItemMixin",
+    "UpgradesMixin"
+  ],
+  "client": [
+    "client.PatternProviderScreenMixin",
+    "client.ScreenStyleAccessor",
+    "client.WidgetContainerAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
